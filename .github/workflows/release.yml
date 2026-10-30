@@ -1,0 +1,57 @@
+name: Release
+
+on:
+  push:
+    tags: [ 'v*' ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build installer & publish release
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Run tests
+        run: dotnet test WindowsServiceAudit.slnx --configuration Release
+
+      # Publishes the self-contained exe and compiles the Inno Setup installer.
+      # ISCC.exe is preinstalled on GitHub's Windows runners.
+      - name: Build installer
+        run: pwsh -File installer\Build-Installer.ps1
+
+      - name: Generate checksums
+        shell: pwsh
+        run: |
+          Set-Location artifacts\installer
+          Get-FileHash WindowsAudit-Setup.exe -Algorithm SHA256 |
+            ForEach-Object { "$($_.Hash.ToLower())  WindowsAudit-Setup.exe" } |
+            Set-Content SHA256SUMS.txt -Encoding ascii
+          Get-Content SHA256SUMS.txt
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: WindowsAudit-Setup
+          path: |
+            artifacts/installer/WindowsAudit-Setup.exe
+            artifacts/installer/SHA256SUMS.txt
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v3
+        with:
+          draft: true
+          generate_release_notes: true
+          files: |
+            artifacts/installer/WindowsAudit-Setup.exe
+            artifacts/installer/SHA256SUMS.txt

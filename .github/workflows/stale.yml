@@ -1,0 +1,32 @@
+name: Mark stale issues and pull requests
+
+on:
+  schedule:
+    - cron: '45 5 * * *'
+  workflow_dispatch:
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/stale@v11
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          days-before-stale: 60
+          days-before-close: 14
+          stale-issue-message: >
+            This issue has been inactive for 60 days and is marked stale. It will
+            be closed in 14 days if there is no further activity. Comment to keep
+            it open.
+          stale-pr-message: >
+            This pull request has been inactive for 60 days and is marked stale.
+            It will be closed in 14 days if there is no further activity. Comment
+            or push to keep it open.
+          stale-issue-label: stale
+          stale-pr-label: stale
+          exempt-issue-labels: 'pinned,security,enhancement'
+          exempt-pr-labels: 'pinned,security'
+          operations-per-run: 50

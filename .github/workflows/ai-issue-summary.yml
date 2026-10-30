@@ -1,0 +1,47 @@
+name: AI Issue Summary
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  summarize:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      models: read
+    steps:
+      - name: Summarize issue with GitHub Models
+        id: ai
+        uses: actions/ai-inference@v1
+        with:
+          system-prompt: >
+            You are a triage assistant for Windows Audit, a Windows 10/11 desktop
+            app (WPF, .NET) that inventories Windows services, compares their
+            executable paths against a user-editable whitelist, and produces CSV
+            and Markdown/DOCX reports. It never starts, stops, or disables
+            services. Summarize new GitHub issues for maintainers.
+          prompt: |
+            Summarize the following GitHub issue in 3 short bullet points:
+            what the user reports, the likely affected area (scan, whitelist,
+            report/export, installer/MSIX, UI, or docs), and any missing
+            information the maintainer should request. Keep it under 120 words.
+
+            Title: ${{ github.event.issue.title }}
+
+            Body:
+            ${{ github.event.issue.body }}
+
+      - name: Post summary comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_URL: ${{ github.event.issue.html_url }}
+          RESPONSE: ${{ steps.ai.outputs.response }}
+        run: |
+          gh issue comment "$ISSUE_URL" --body "## 🤖 AI Summary
+
+          $RESPONSE
+
+          ---
+          _Generated automatically by GitHub Models. May contain mistakes._"
