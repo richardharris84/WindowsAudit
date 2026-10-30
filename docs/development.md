@@ -1,6 +1,6 @@
 # Developer Guide
 
-[Recreate the project with Copilot prompts](../Copilot-Prompts.md) covers the PowerShell prototype, WPF application, packaging, Store assets, and testing, with recovered requests distinguished from reconstructed prompts.
+[Recreate the project with Copilot prompts](../Copilot-Prompts.md) covers the PowerShell prototype, WPF application, packaging, Store assets, and testing, with an explanation of the guide's sources and scope.
 
 ## Download Source Code
 
@@ -30,7 +30,7 @@ The app targets `net10.0-windows`; WPF provides its main window, menus, audit gr
 WindowsAudit/
 |-- .gitignore                             # Excludes generated outputs and local/private data
 |-- README.md                              # End-user introduction and safety notes
-|-- Copilot-Prompts.md                      # Ordered reconstruction prompts and recovered history
+|-- Copilot-Prompts.md                      # Ordered reconstruction prompts, sources, and scope
 |-- WindowsServiceAudit.slnx                # .NET solution
 |-- artifacts/                             # Generated outputs and local build tools
 |   |-- branding/                          # Store logo PNGs (1024, 300, 150, and 71 px)
