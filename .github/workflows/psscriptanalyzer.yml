@@ -9,6 +9,9 @@ on:
     paths: [ '**.ps1', '.github/workflows/psscriptanalyzer.yml' ]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   lint:
     name: Lint PowerShell scripts
