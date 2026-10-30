@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\WindowsServiceAudit.Core\WindowsServiceAudit.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\..\README.md" Link="Assets\README.md" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\Copilot-Prompts.md" Link="Assets\Copilot-Prompts.md" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\docs\**\*.md" Link="Assets\docs\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\whitelist.csv" CopyToOutputDirectory="PreserveNewest" />
+    <Resource Include="Assets\WindowsAudit.ico" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <ApplicationIcon>Assets\WindowsAudit.ico</ApplicationIcon>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>WindowsAudit</AssemblyName>
+    <Product>Windows Audit</Product>
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+
+</Project>

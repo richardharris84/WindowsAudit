@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/WindowsServiceAudit.App/WindowsServiceAudit.App.csproj" />
+    <Project Path="src/WindowsServiceAudit.Core/WindowsServiceAudit.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/WindowsServiceAudit.Tests/WindowsServiceAudit.Tests.csproj" />
+  </Folder>
+</Solution>

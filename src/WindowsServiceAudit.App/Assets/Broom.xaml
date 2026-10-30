@@ -1,0 +1,12 @@
+<DrawingImage xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <DrawingImage.Drawing>
+        <DrawingGroup>
+            <GeometryDrawing Brush="#A9652B" Geometry="M 179,25 Q 185,19 192,25 Q 198,31 192,38 L 111,142 L 98,132 Z" />
+            <GeometryDrawing Brush="#F6DFC1" Geometry="M 182,28 L 187,32 L 106,137 L 101,133 Z" />
+            <GeometryDrawing Brush="#FFE08A" Geometry="M 91,125 L 122,149 Q 117,186 119,222 Q 69,235 22,199 Q 60,167 91,125 Z" />
+            <GeometryDrawing Brush="#E6A93D" Geometry="M 92,143 L 98,147 L 38,207 L 31,203 Z M 101,151 L 106,154 L 58,220 L 51,217 Z M 109,157 L 114,159 L 81,228 L 74,226 Z M 115,166 L 119,170 L 105,226 L 98,228 Z" />
+            <GeometryDrawing Brush="#8B5125" Geometry="M 88,129 L 124,153 L 120,165 L 80,140 Z" />
+            <GeometryDrawing Brush="#FFFFFF" Geometry="M 211,73 L 216,88 L 231,93 L 216,98 L 211,113 L 206,98 L 191,93 L 206,88 Z M 174,155 L 179,169 L 193,174 L 179,179 L 174,193 L 169,179 L 155,174 L 169,169 Z M 57,36 L 61,47 L 72,51 L 61,55 L 57,66 L 53,55 L 42,51 L 53,47 Z M 209,207 L 212,216 L 221,219 L 212,222 L 209,231 L 206,222 L 197,219 L 206,216 Z M 33,110 L 36,118 L 44,121 L 36,124 L 33,132 L 30,124 L 22,121 L 30,118 Z M 132,56 L 135,64 L 143,67 L 135,70 L 132,78 L 129,70 L 121,67 L 129,64 Z" />
+        </DrawingGroup>
+    </DrawingImage.Drawing>
+</DrawingImage>

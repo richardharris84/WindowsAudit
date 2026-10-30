@@ -1,0 +1,39 @@
+# Generated packages, media, published applications, and downloaded tools
+/artifacts/
+
+# .NET build and test outputs
+**/bin/
+**/obj/
+**/TestResults/
+*.trx
+*.coverage
+*.coveragexml
+
+# Local IDE state
+.vs/
+*.user
+*.suo
+*.sln.docstates
+
+# Generated service inventories and reports may contain identifying information
+Win-Srv-Eval-Results.csv
+Win-Srv-Eval-Report.md
+Win-Srv-Eval-Report.docx
+service-evaluation-results.csv
+RESULTS.md
+
+# Local application data; keep the versioned starter whitelist
+settings.json
+whitelist.csv
+!src/WindowsServiceAudit.App/Assets/whitelist.csv
+
+# Signing materials and local secrets
+*.pfx
+*.p12
+*.key
+*.pem
+*.cer
+*.crt
+.env
+.env.*
+!.env.example

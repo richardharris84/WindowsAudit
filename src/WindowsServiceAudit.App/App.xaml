@@ -1,0 +1,22 @@
+﻿<Application x:Class="WindowsServiceAudit.App.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:WindowsServiceAudit.App"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <SolidColorBrush x:Key="CanvasBrush" Color="#F2F5F5" />
+        <SolidColorBrush x:Key="InkBrush" Color="#1C3038" />
+        <SolidColorBrush x:Key="MutedBrush" Color="#60747B" />
+        <SolidColorBrush x:Key="AccentBrush" Color="#087E83" />
+        <SolidColorBrush x:Key="LineBrush" Color="#D9E2E3" />
+        <Style TargetType="Button">
+            <Setter Property="Padding" Value="14,8" />
+            <Setter Property="Margin" Value="4,0" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Background" Value="#E5ECEC" />
+            <Setter Property="Foreground" Value="{StaticResource InkBrush}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+    </Application.Resources>
+</Application>
