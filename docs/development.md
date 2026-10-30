@@ -4,7 +4,7 @@
 
 ## Download Source Code
 
-[https://github.com/richardharris84/](https://github.com/richardharris84/) `<TBD>`
+[Windows Audit on GitHub](https://github.com/richardharris84/WindowsAudit)
 
 ## Run from Source
 
@@ -49,6 +49,13 @@ WindowsAudit/
 |-- installer/
 |   |-- Build-Installer.ps1                 # Self-contained publish and Inno Setup build
 |   `-- WindowsAudit.iss                    # Per-user installer and shortcut definitions
+|-- media/
+|   |-- Build-Branding.ps1                  # Render Store logos from the versioned broom drawing
+|   `-- trailer/
+|       |-- Build-Trailer.ps1               # Re-encode and validate the archived 60-second trailer
+|       |-- thumbnail.png                  # Exact final thumbnail source
+|       |-- frames/                        # 27 reviewed scene PNGs and timeline.txt
+|       `-- harness/                       # Portable WPF demo source and optional capture helpers
 |-- packaging/
 |   |-- AppxManifest.xml                    # Store identity, capabilities, and package assets
 |   `-- Build-MSIX.ps1                      # Publish, generate logos, and package with MakeAppx
@@ -77,11 +84,13 @@ WindowsAudit/
 |       |-- DocxReportWriter.cs             # Word document report generation
 |       |-- ResultsWriter.cs                # Dynamic Win-Srv-Eval-Report.md generation
 |       `-- WindowsServiceAudit.Core.csproj  # Core library project
-`-- tests/
-    `-- WindowsServiceAudit.Tests/
-        |-- AuditCoreTests.cs                 # Core and report regression tests
-        |-- MSTestSettings.cs                 # Test-runner settings
-        `-- WindowsServiceAudit.Tests.csproj  # MSTest project
+|-- tests/
+|   `-- WindowsServiceAudit.Tests/
+|       |-- AuditCoreTests.cs                 # Core and report regression tests
+|       |-- MSTestSettings.cs                 # Test-runner settings
+|       `-- WindowsServiceAudit.Tests.csproj  # MSTest project
+`-- tools/
+    `-- Backup-Whitelist.ps1                # Verified private backup outside the workspace
 ```
 
 Build-generated `bin/`, `obj/`, and `TestResults/` directories and the expanded
@@ -182,6 +191,86 @@ still allow users to choose a writable destination.
 `AuditFolderSettings` persists an optional selected directory in `%LOCALAPPDATA%\WindowsServiceAudit\settings.json`. `AuditDataDirectory.Resolve` validates that configured directory and uses it without silently falling back if it becomes unavailable. When no directory is configured, it probes the application directory and uses it when writable; otherwise, `MainWindow` supplies `%LOCALAPPDATA%\WindowsServiceAudit` as the fallback. Audit reports and `whitelist.csv` share the resolved location; the editor saves with the existing `Whitelist.Save` format, and each audit reloads it through `Whitelist.LoadOrSeed`.
 
 The app packages the root README, `Copilot-Prompts.md`, and files under `docs/` as local Markdown help. The app uses WMI, the Windows registry, process metadata, and file-signing metadata locally. It does not invoke PowerShell, an online AI service, or network APIs.
+
+## Recovery and Media Reproduction
+
+Source, build scripts, the starter whitelist, icons, and reviewed trailer inputs
+belong in Git. Generated packages and the final media belong in
+[GitHub Releases](https://github.com/richardharris84/WindowsAudit/releases).
+The recovery Release is a **draft archive of the existing builds**, not a new
+Store-certified distribution. Draft assets require the owner's authenticated
+GitHub access. It includes the unsigned Setup, unsigned Store MSIX, four logos,
+the original final video and thumbnail, and `SHA256SUMS.txt`. It excludes private
+reports, customized whitelists, and the test certificate/package.
+
+To recover after losing the workspace, clone the repository, download the
+recovery Release assets, and compare their SHA-256 hashes with `SHA256SUMS.txt`.
+The original archived files are preserved byte-for-byte; rebuilding may produce
+different bytes with equivalent behavior. Existing installer/MSIX files predate
+later documentation changes; rebuild with a new package version before
+distributing an updated application.
+
+Regenerate Store logos from the versioned vector:
+
+```powershell
+pwsh -STA -File .\media\Build-Branding.ps1
+```
+
+Re-encode the final trailer from the versioned, normalized scene images:
+
+```powershell
+.\media\trailer\Build-Trailer.ps1 -FfmpegPath 'C:\tools\ffmpeg.exe' -FfprobePath 'C:\tools\ffprobe.exe'
+```
+
+Obtain FFmpeg/FFprobe separately (reference version: 9.0.2); they are not
+committed. The script refuses to overwrite an existing final pair unless
+`-Overwrite` is explicitly supplied. It checks the timeline, codecs, dimensions,
+frame count, exact duration/start times, and full decoding. Its output is a
+functional recreation, not a promise of the original MP4's checksum.
+The exact final thumbnail is versioned as `media/trailer/thumbnail.png`.
+
+The WPF harness can refresh the simulated app/menu scenes against current
+source. Copy the archived frames to a disposable output directory first:
+
+```powershell
+New-Item -ItemType Directory .\artifacts\trailer-render -Force
+Copy-Item .\media\trailer\frames\*.png .\artifacts\trailer-render
+dotnet run --project .\media\trailer\harness\TrailerTools.csproj -c Release -- .\artifacts\trailer-render scan
+dotnet run --project .\media\trailer\harness\TrailerTools.csproj -c Release -- .\artifacts\trailer-render
+```
+
+The harness verifies fictional REVIEW filtering and numeric sorting. Utility,
+closing, and whitelist scenes can be reused from the archive; rerendering UI
+does not recreate historical Windows utility screenshots or thumbnail artwork.
+`Capture.ps1` and `Redact.ps1` are optional historical capture helpers requiring
+explicit input/output directories and an interactive English Windows desktop.
+They are not run by the trailer encoder. Captures contain real system data:
+keep raw images private, and manually review every crop/redaction before use.
+Raw captures and window-handle files are ignored. Pixelation alone must not be
+assumed sufficient for a new screenshot; the reviewed final composite frames
+are the recovery inputs committed here.
+
+### Private Whitelist Backup
+
+Run the backup helper with a private destination outside the workspace:
+
+```powershell
+.\tools\Backup-Whitelist.ps1 -Destination 'C:\Backups\WindowsAudit-Private'
+```
+
+It copies workspace, unpackaged LocalAppData, and known MSIX whitelist files
+into a new timestamped folder and verifies their SHA-256 hashes. It also checks
+saved audit-folder settings for configured whitelist locations. `manifest.json`
+maps each copy to its original path. Pass `-AdditionalWhitelistPath` for any
+other custom whitelist outside these locations.
+Keep this unencrypted backup private; a cloud-synced destination follows that
+provider's privacy and retention settings. Do not upload it as a Release asset.
+
+To restore, close the app, choose the desired copy from the manifest, verify
+its hash, then copy it to `whitelist.csv` in the active audit directory. Do not
+replace a newer customization without checking it first. A backup outside the
+workspace survives deleting that workspace, but separate/offline backups are
+still advisable for protection against account loss or synchronized deletion.
 
 [← Back to the README](../README.md)
 

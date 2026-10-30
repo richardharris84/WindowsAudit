@@ -37,3 +37,7 @@ whitelist.csv
 .env
 .env.*
 !.env.example
+
+# Unreviewed utility captures must never enter source history
+*-raw.png
+*-handle.txt

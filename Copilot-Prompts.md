@@ -27,7 +27,7 @@ Prompts can reproduce the functionality and project structure, not guarantee ide
 6. Store identity values below belong to this Windows Audit product. For a fork, obtain a separate reserved identity and replace the publisher, attribution, and branding as appropriate.
 7. Downloads, installing tools, certificate creation/trust, app installation, publishing, and deletion are separate approval points. A prompt describing them is not permission to perform all of them automatically.
 
-The final application and its usage are described by [README.md](README.md), [FAQ](docs/faq.md), and the [developer guide](docs/development.md).
+The final application and its usage are described by [README.md](README.md), [FAQ](docs/faq.md), and the [developer guide](docs/development.md). The developer guide also documents the versioned media inputs, regeneration scripts, GitHub Release recovery archive, and private whitelist backup workflow.
 
 ## Prompt 00 - Establish the Working Contract
 
@@ -526,8 +526,8 @@ only with cautions about dependencies and consequences.
 
 Document source prerequisites, solution layout, build/test/run/publish commands,
 installer and MSIX generation, and installed-package testing. Do not document
-nonexistent .search-ms files or a fabricated source repository URL. Preserve
-the source-download placeholder until an actual repository URL is provided.
+nonexistent .search-ms files or a fabricated source repository URL. The current
+source repository is https://github.com/richardharris84/WindowsAudit.
 Link Copilot-Prompts.md from the top of the developer guide.
 
 End README and development.md with a horizontal rule and:
