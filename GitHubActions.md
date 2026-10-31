@@ -164,19 +164,32 @@ system information before posting to this public repository.
 File: [ai-issue-summary.yml](.github/workflows/ai-issue-summary.yml).
 
 - Runs only when an issue is opened; edits do not refresh its summary.
-- Uses `actions/ai-inference@v1` with a Windows Audit-specific system prompt.
+- Installs the Copilot CLI and uses `actions/ai-inference@v3` with a Windows
+  Audit-specific system prompt. No tool permissions are granted to the CLI.
 - Requests three short bullets covering the report, likely affected area, and
   missing information, with a requested limit of 120 words.
 - Posts the response using `gh issue comment`, with a notice that the generated
   summary may contain mistakes.
-- Grants `contents: read`, `issues: write`, and `models: read`.
-- Uses the built-in GitHub token; no separate model API secret is configured.
+- Grants `contents: read` and `issues: write`; the built-in GitHub token is used
+  only to post comments.
+- Requires a repository Actions secret named `COPILOT_PAT`: a personal
+  fine-grained token with the **Copilot Requests** account permission, owned by
+  an account with an active Copilot subscription. Classic PATs and the built-in
+  `GITHUB_TOKEN` are not supported for Copilot inference.
+- If `COPILOT_PAT` is absent, emits a warning and skips inference and commenting.
+  Empty model responses are not posted.
 
-**Operational notes:** GitHub Models availability, repository or organization
-policy, and applicable quotas can affect execution. The word limit is a prompt
+**Operational notes:** [GitHub Models was retired on July 30, 2026](https://docs.github.com/en/github-models),
+including its inference API. The former `actions/ai-inference@v1` configuration
+failed on the retired endpoint with `Cannot use 'in' operator to search for
+'choices' in OK`; it has been replaced with Copilot inference. Copilot access,
+repository or organization policy, and applicable quotas can affect execution.
+The word limit is a prompt
 instruction, not a programmatically enforced limit. Issue title and body are
 sent to model inference; do not include confidential data or credentials in
-issues. This workflow was not exercised during the original validation.
+issues. This workflow was not exercised during the original validation. After
+configuring the secret, open a new issue to verify inference and comment posting;
+rerunning the old failed run uses its original workflow, not this fix.
 
 ### 7. Stale Issues and Pull Requests
 

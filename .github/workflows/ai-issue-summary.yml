@@ -10,12 +10,36 @@ jobs:
     permissions:
       contents: read
       issues: write
-      models: read
     steps:
-      - name: Summarize issue with GitHub Models
-        id: ai
-        uses: actions/ai-inference@v1
+      - name: Check Copilot configuration
+        id: copilot
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT }}
+        run: |
+          if [ -n "$COPILOT_GITHUB_TOKEN" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::AI summary skipped. Configure COPILOT_PAT with Copilot Requests permission and an active Copilot subscription."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-node@v6
+        if: steps.copilot.outputs.enabled == 'true'
         with:
+          node-version: '24'
+
+      - name: Install Copilot CLI
+        if: steps.copilot.outputs.enabled == 'true'
+        run: npm install --global @github/copilot@1.0.105
+
+      - name: Summarize issue with GitHub Copilot
+        if: steps.copilot.outputs.enabled == 'true'
+        id: ai
+        uses: actions/ai-inference@v3
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT }}
+        with:
+          provider: copilot
           system-prompt: >
             You are a triage assistant for Windows Audit, a Windows 10/11 desktop
             app (WPF, .NET) that inventories Windows services, compares their
@@ -34,6 +58,7 @@ jobs:
             ${{ github.event.issue.body }}
 
       - name: Post summary comment
+        if: steps.copilot.outputs.enabled == 'true' && steps.ai.outputs.response != ''
         env:
           GH_TOKEN: ${{ github.token }}
           ISSUE_URL: ${{ github.event.issue.html_url }}
@@ -44,4 +69,4 @@ jobs:
           $RESPONSE
 
           ---
-          _Generated automatically by GitHub Models. May contain mistakes._"
+          _Generated automatically by GitHub Copilot. May contain mistakes._"
