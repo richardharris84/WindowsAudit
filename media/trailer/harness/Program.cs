@@ -7,6 +7,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+using System.Xml.Linq;
 using WindowsServiceAudit.App;
 using WindowsServiceAudit.Core;
 
@@ -24,7 +25,13 @@ internal static partial class Program
         Root = Path.GetFullPath(args[0]);
         Directory.CreateDirectory(Root);
         var app = new App();
-        app.InitializeComponent();
+        var sourceRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", ".."));
+        var appXaml = XDocument.Load(Path.Combine(sourceRoot, "src", "WindowsServiceAudit.App", "App.xaml"));
+        XNamespace ns = "http://schemas.microsoft.com/winfx/2006/xaml/presentation";
+        var resources = new XElement(ns + "ResourceDictionary",
+            new XAttribute(XNamespace.Xmlns + "x", "http://schemas.microsoft.com/winfx/2006/xaml"),
+            appXaml.Root!.Element(ns + "Application.Resources")!.Elements());
+        app.Resources = (ResourceDictionary)System.Windows.Markup.XamlReader.Parse(resources.ToString());
         app.ShutdownMode = ShutdownMode.OnExplicitShutdown;
         if (args.Length > 1 && args[1] == "scan")
         {
@@ -32,7 +39,7 @@ internal static partial class Program
             return;
         }
         var original = new MainWindow();
-        var content = (DockPanel)original.Content;
+        var content = (FrameworkElement)original.Content;
         original.Content = null;
         var host = new Window
         {
@@ -41,11 +48,11 @@ internal static partial class Program
         };
         host.Show();
         host.UpdateLayout();
-        var menu = (Menu)content.Children[0];
-        var tools = menu.Items.OfType<MenuItem>().Single(item => item.Header.ToString() == "Tools");
+        var menu = Descendants(content).OfType<Menu>().Single();
+        var tools = menu.Items.OfType<MenuItem>().Single(item => item.Header.ToString()!.Replace("_", "") == "Tools");
         var entries = tools.Items.OfType<MenuItem>().ToArray();
         var expected = new[] { "Scan Windows Services…", "Stop / Disable Services", "Add or remove programs", "Startup Apps", "Cleanup Large Files" };
-        if (!entries.Select(item => item.Header.ToString()).SequenceEqual(expected))
+        if (!entries.Select(item => item.Header.ToString()!.Replace("_", "")).SequenceEqual(expected))
             throw new InvalidOperationException("Tools menu changed; update trailer coverage.");
         for (var index = 0; index < entries.Length; index++)
         {

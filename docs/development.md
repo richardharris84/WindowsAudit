@@ -1,6 +1,6 @@
 # Developer Guide
 
-[Recreate the project with Copilot prompts](../Copilot-Prompts.md) covers the PowerShell prototype, WPF application, packaging, Store assets, and testing, with an explanation of the guide's sources and scope.
+[Recreate the project with Copilot prompts](Copilot-Prompts.md) covers the PowerShell prototype, WPF application, packaging, Store assets, and testing, with an explanation of the guide's sources and scope.
 
 [GitHub Actions guide](../GitHubActions.md) describes CI, code scanning, script
 analysis, and the Release workflow.
@@ -37,7 +37,6 @@ WindowsAudit/
 |   |   `-- release-build.prompt.md         # Reusable full build and GitHub Release prompt
 |   `-- workflows/                         # CI, scanning, automation, and Release action
 |-- README.md                              # End-user introduction and safety notes
-|-- Copilot-Prompts.md                      # Ordered reconstruction prompts, sources, and scope
 |-- GitHubActions.md                        # GitHub Actions workflow guide
 |-- WindowsServiceAudit.slnx                # .NET solution
 |-- artifacts/                             # Generated outputs and local build tools
@@ -52,6 +51,7 @@ WindowsAudit/
 |       |-- WindowsAudit-Trailer-60s-Store.mp4
 |       `-- WindowsAudit-Trailer-60s-Thumbnail.png
 |-- docs/
+|   |-- Copilot-Prompts.md                  # Ordered reconstruction prompts, sources, and scope
 |   |-- development.md                      # Build, publish, architecture, and project layout
 |   `-- faq.md                              # Common questions and privacy details
 |-- installer/
@@ -113,7 +113,7 @@ under `src/WindowsServiceAudit.App/Assets/` remains versioned. Share installers
 and the trailer as GitHub Release attachments rather than committing binaries;
 review any exported reports for identifying information before sharing.
 
-The root README, `Copilot-Prompts.md`, and `docs/` Markdown files are copied into
+The root README and `docs/` Markdown files (including `Copilot-Prompts.md`) are copied into
 the app's output `Assets/` directory during builds. Existing installer, MSIX, and
 publish outputs are not automatically refreshed when source documentation changes.
 
@@ -296,7 +296,7 @@ ordinary direct installation without appropriate signing.
 
 `AuditFolderSettings` persists an optional selected directory in `%LOCALAPPDATA%\WindowsServiceAudit\settings.json`. `AuditDataDirectory.Resolve` validates that configured directory and uses it without silently falling back if it becomes unavailable. When no directory is configured, it probes the application directory and uses it when writable; otherwise, `MainWindow` supplies `%LOCALAPPDATA%\WindowsServiceAudit` as the fallback. Audit reports and `whitelist.csv` share the resolved location; the editor saves with the existing `Whitelist.Save` format, and each audit reloads it through `Whitelist.LoadOrSeed`.
 
-The app packages the root README, `Copilot-Prompts.md`, and files under `docs/` as local Markdown help. The app uses WMI, the Windows registry, process metadata, and file-signing metadata locally. It does not invoke PowerShell, an online AI service, or network APIs.
+The app packages the root README and files under `docs/`, including `Copilot-Prompts.md`, as local Markdown help. The app uses WMI, the Windows registry, process metadata, and file-signing metadata locally. It does not invoke PowerShell, an online AI service, or network APIs.
 
 ## Recovery and Media Reproduction
 
@@ -345,8 +345,24 @@ dotnet run --project .\media\trailer\harness\TrailerTools.csproj -c Release -- .
 dotnet run --project .\media\trailer\harness\TrailerTools.csproj -c Release -- .\artifacts\trailer-render
 ```
 
-The harness verifies fictional REVIEW filtering and numeric sorting. Utility,
-closing, and whitelist scenes can be reused from the archive; rerendering UI
+To encode the refreshed scenes instead of the archived inputs, also copy the
+timeline and pass the staged frame directory to the encoder:
+
+```powershell
+Copy-Item .\media\trailer\frames\timeline.txt .\artifacts\trailer-render
+.\media\trailer\Build-Trailer.ps1 -FramesDirectory .\artifacts\trailer-render -ThumbnailPath .\artifacts\trailer-render\scan-complete.png -FfmpegPath 'C:\tools\ffmpeg.exe' -FfprobePath 'C:\tools\ffprobe.exe' -Overwrite
+```
+
+This uses the refreshed inventory scene as the thumbnail. Omit `-ThumbnailPath`
+to retain the archived thumbnail artwork. `-FramesDirectory` also defaults to the
+archived frames, preserving the original reproduction command.
+The encoder normalizes every scene to RGB before concatenation so mixing
+refreshed RGBA app captures with archived RGB utility images does not reset
+the timing filter or skip utility scenes.
+
+The harness verifies fictional REVIEW filtering and numeric sorting, and
+refreshes the Getting Started, scan, report, whitelist, and Tools menu scenes.
+Utility and closing scenes can be reused from the archive; rerendering UI
 does not recreate historical Windows utility screenshots or thumbnail artwork.
 `Capture.ps1` and `Redact.ps1` are optional historical capture helpers requiring
 explicit input/output directories and an interactive English Windows desktop.

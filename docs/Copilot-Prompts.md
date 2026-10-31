@@ -27,7 +27,7 @@ Prompts can reproduce the functionality and project structure, not guarantee ide
 6. Store identity values below belong to this Windows Audit product. For a fork, obtain a separate reserved identity and replace the publisher, attribution, and branding as appropriate.
 7. Downloads, installing tools, certificate creation/trust, app installation, publishing, and deletion are separate approval points. A prompt describing them is not permission to perform all of them automatically.
 
-The final application and its usage are described by [README.md](README.md), [FAQ](docs/faq.md), and the [developer guide](docs/development.md). The developer guide also documents the versioned media inputs, regeneration scripts, GitHub Release recovery archive, and private whitelist backup workflow.
+The final application and its usage are described by [README.md](../README.md), [FAQ](faq.md), and the [developer guide](development.md). The developer guide also documents the versioned media inputs, regeneration scripts, GitHub Release recovery archive, and private whitelist backup workflow.
 
 ## Prompt 00 - Establish the Working Contract
 
@@ -451,8 +451,8 @@ Navigate relative local Markdown links within the supplied assets root only.
 Reject traversal outside that root and unsupported local file types. Allow
 user-initiated http/https/mailto links via the shell, without prefetching.
 
-Package README.md, docs\*.md, and Copilot-Prompts.md under Assets, preserving
-relative paths. In docs\development.md link ../Copilot-Prompts.md near the top;
+Package README.md and docs\*.md (including docs\Copilot-Prompts.md) under Assets,
+preserving relative paths. In docs\development.md link Copilot-Prompts.md near the top;
 verify this also works in the app rather than only in a source editor.
 ```
 
@@ -912,4 +912,4 @@ Important boundaries when recreating the final application:
 - **Testing:** source/unit tests, MakeAppx validation, installed-MSIX workflow checks, and Store certification are different gates.
 - **Package freshness:** adding this guide to runtime assets changes future build content; already-created MSIX/Setup artifacts are not retroactively updated.
 
-[Back to the developer guide](docs/development.md)
+[Back to the developer guide](development.md)

@@ -2,13 +2,15 @@ param(
     [string]$FfmpegPath = 'ffmpeg',
     [string]$FfprobePath = 'ffprobe',
     [string]$OutputDirectory = (Join-Path $PSScriptRoot '..\..\artifacts\trailer'),
+    [string]$FramesDirectory = (Join-Path $PSScriptRoot 'frames'),
+    [string]$ThumbnailPath = (Join-Path $PSScriptRoot 'thumbnail.png'),
     [switch]$Overwrite
 )
 
 $ErrorActionPreference = 'Stop'
 $encoder = (Get-Command $FfmpegPath -ErrorAction Stop).Source
 $probe = (Get-Command $FfprobePath -ErrorAction Stop).Source
-$frames = Join-Path $PSScriptRoot 'frames'
+$frames = [IO.Path]::GetFullPath($FramesDirectory)
 $timeline = Join-Path $frames 'timeline.txt'
 $total = 0.0
 foreach ($line in Get-Content -LiteralPath $timeline) {
@@ -29,9 +31,21 @@ if (-not $Overwrite -and ((Test-Path -LiteralPath $video) -or (Test-Path -Litera
     throw 'Output already exists. Choose another directory or explicitly pass -Overwrite.'
 }
 $overwriteFlag = if ($Overwrite) { '-y' } else { '-n' }
-& $encoder -hide_banner -loglevel warning $overwriteFlag -f concat -safe 0 -i $timeline `
+$normalized = Join-Path $output "normalized-$([Guid]::NewGuid().ToString('N'))"
+New-Item -ItemType Directory -Path $normalized | Out-Null
+try {
+    Copy-Item -LiteralPath $timeline -Destination (Join-Path $normalized 'timeline.txt')
+    $sceneNames = Get-Content -LiteralPath $timeline |
+        ForEach-Object { if ($_ -match "^file '([^']+)'$") { $Matches[1] } } |
+        Select-Object -Unique
+    foreach ($name in $sceneNames) {
+        & $encoder -hide_banner -loglevel error -y -i (Join-Path $frames $name) `
+            -vf 'format=rgb24' -frames:v 1 -update 1 (Join-Path $normalized $name)
+        if ($LASTEXITCODE -ne 0) { throw "Scene normalization failed: $name" }
+    }
+& $encoder -hide_banner -loglevel warning $overwriteFlag -f concat -safe 0 -i (Join-Path $normalized 'timeline.txt') `
     -f lavfi -i 'anullsrc=channel_layout=stereo:sample_rate=48000' `
-    -map 0:v:0 -map 1:a:0 -vf 'fps=30,format=yuv420p' `
+    -map 0:v:0 -map 1:a:0 -vf 'fps=30,format=yuv420p' -r 30 -fps_mode cfr `
     -c:v libx264 -preset medium -profile:v high -level:v 4.1 -pix_fmt yuv420p `
     -b:v 50M -minrate 50M -maxrate 50M -bufsize 50M -g 15 -keyint_min 15 -bf 2 `
     -sc_threshold 0 -x264-params 'nal-hrd=cbr:filler=1:force-cfr=1:open-gop=0:b-adapt=0:cabac=1' `
@@ -39,6 +53,10 @@ $overwriteFlag = if ($Overwrite) { '-y' } else { '-n' }
     -af 'atrim=duration=59.978666667' -t 60 `
     -movflags '+faststart+negative_cts_offsets' -use_editlist 0 -avoid_negative_ts disabled $video
 if ($LASTEXITCODE -ne 0) { throw 'FFmpeg trailer encoding failed.' }
+}
+finally {
+    Remove-Item -LiteralPath $normalized -Recurse -Force
+}
 
 $metadata = & $probe -v error -show_streams -show_format -of json $video
 if ($LASTEXITCODE -ne 0) { throw 'FFprobe validation failed.' }
@@ -63,5 +81,5 @@ foreach ($item in @($info.format, $videoStream[0], $audioStream[0])) {
 }
 & $encoder -hide_banner -loglevel error -xerror -i $video -f null -
 if ($LASTEXITCODE -ne 0) { throw 'Trailer failed full decoding.' }
-Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'thumbnail.png') -Destination $thumbnail -Force
+Copy-Item -LiteralPath $ThumbnailPath -Destination $thumbnail -Force
 Get-FileHash -LiteralPath $video, $thumbnail -Algorithm SHA256

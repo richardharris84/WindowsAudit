@@ -6,7 +6,6 @@
 
   <ItemGroup>
     <Content Include="..\..\README.md" Link="Assets\README.md" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="..\..\Copilot-Prompts.md" Link="Assets\Copilot-Prompts.md" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\docs\**\*.md" Link="Assets\docs\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="Assets\whitelist.csv" CopyToOutputDirectory="PreserveNewest" />
     <Resource Include="Assets\WindowsAudit.ico" />

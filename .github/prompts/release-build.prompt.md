@@ -47,7 +47,7 @@ or publication preference supplied with this prompt.
   the executable, and keep the MSIX build script's default derived from the app
   project. Preserve existing installation paths, shortcuts, and upgrade identity.
 - Update directly related version/build documentation, including current
-  reconstruction instructions in [Copilot-Prompts.md](../../Copilot-Prompts.md).
+  reconstruction instructions in [Copilot-Prompts.md](../../docs/Copilot-Prompts.md).
   Do not rewrite historical release notes or archived examples as current releases.
 - Detect the repository's test platform and use its existing Release test command.
   Run focused tests while developing and the solution tests before release.
