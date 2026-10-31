@@ -118,6 +118,24 @@ public sealed class DataGridTests
     }
 
     [TestMethod]
+    public void GettingStartedAssetsAreAvailableBesideApplication()
+    {
+        foreach (var relativePath in new[]
+        {
+            Path.Combine("Assets", "README.md"),
+            Path.Combine("Assets", "docs", "development.md"),
+            Path.Combine("Assets", "docs", "faq.md"),
+            Path.Combine("Assets", "docs", "Copilot-Prompts.md"),
+            Path.Combine("Assets", "whitelist.csv")
+        })
+        {
+            var path = Path.Combine(AppContext.BaseDirectory, relativePath);
+            Assert.IsTrue(File.Exists(path), $"Required application asset is missing: {path}");
+            Assert.IsFalse(string.IsNullOrWhiteSpace(File.ReadAllText(path)), $"Application asset is empty: {path}");
+        }
+    }
+
+    [TestMethod]
     public void AccessibilityPreferenceDefaultsOffAndRoundTrips()
     {
         var directory = Path.Combine(Path.GetTempPath(), $"WindowsAudit-accessibility-{Guid.NewGuid():N}");

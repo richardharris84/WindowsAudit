@@ -40,8 +40,9 @@ or publication preference supplied with this prompt.
 - Implement only the requested release changes; do not repeat previous UI changes
   unless requested. Add focused regression tests for behavior changes.
 - Set the app project's `Version` and MSIX manifest identity version to the
-  selected version. Set the MSIX package display name to
-  `Windows Audit <version>` while preserving its Store identity and publisher.
+  selected version. Keep the MSIX package display name exactly `Windows Audit`,
+  matching the reserved Store name, without a version suffix. Preserve its Store
+  identity and publisher.
 - Ensure Add/Remove Programs shows `Windows Audit <version>` and publisher
   `Built by Richard Harris`. Keep the installer version/display name derived from
   the executable, and keep the MSIX build script's default derived from the app

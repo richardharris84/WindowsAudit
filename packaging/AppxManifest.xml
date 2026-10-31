@@ -9,7 +9,7 @@
             Version="1.0.3.0"
             ProcessorArchitecture="x64" />
   <Properties>
-    <DisplayName>Windows Audit 1.0.3.0</DisplayName>
+    <DisplayName>Windows Audit</DisplayName>
     <PublisherDisplayName>Built by Richard Harris</PublisherDisplayName>
     <Description>Read-only Windows service inventory and evaluation reports.</Description>
     <Logo>StoreAssets\StoreLogo.png</Logo>

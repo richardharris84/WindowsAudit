@@ -36,6 +36,9 @@ jobs:
           if ($manifest.Package.Identity.Version -ne $version) {
             throw "App and MSIX manifest versions must match."
           }
+          if ($manifest.Package.Properties.DisplayName -ne 'Windows Audit') {
+            throw "MSIX display name must match the reserved Store name Windows Audit."
+          }
           if ($env:GITHUB_REF_TYPE -eq 'tag' -and $env:GITHUB_REF_NAME -ne "v$version") {
             throw "Release tag must match app version v$version."
           }
@@ -63,8 +66,15 @@ jobs:
             $reader = [IO.StreamReader]::new($package.GetEntry('AppxManifest.xml').Open())
             try { $manifest = [xml]$reader.ReadToEnd() } finally { $reader.Dispose() }
             if ($manifest.Package.Identity.Version -ne $version -or
-                $manifest.Package.Properties.DisplayName -ne "Windows Audit $version") {
-              throw "Built MSIX version or display name does not match $version."
+                $manifest.Package.Properties.DisplayName -ne 'Windows Audit') {
+              throw "Built MSIX must have version $version and reserved Store display name Windows Audit."
+            }
+            $entry = $package.GetEntry('Assets/README.md')
+            if (-not $entry) { throw "Built MSIX is missing the Getting Started README." }
+            $reader = [IO.StreamReader]::new($entry.Open())
+            try { $readme = $reader.ReadToEnd() } finally { $reader.Dispose() }
+            if ($readme -ne [IO.File]::ReadAllText((Join-Path $PWD 'README.md'))) {
+              throw "Built MSIX Getting Started README does not match the source."
             }
           }
           finally { $package.Dispose() }

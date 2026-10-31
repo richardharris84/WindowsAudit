@@ -5,9 +5,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="..\..\README.md" Link="Assets\README.md" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="..\..\docs\**\*.md" Link="Assets\docs\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="Assets\whitelist.csv" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\README.md" Link="Assets\README.md" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="Always" ExcludeFromSingleFile="true" />
+    <Content Include="..\..\docs\**\*.md" Link="Assets\docs\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="Always" ExcludeFromSingleFile="true" />
+    <Content Include="Assets\whitelist.csv" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="Always" ExcludeFromSingleFile="true" />
     <Resource Include="Assets\WindowsAudit.ico" />
   </ItemGroup>
 
