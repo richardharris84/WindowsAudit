@@ -20,7 +20,7 @@
     <UseWPF>true</UseWPF>
     <AssemblyName>WindowsAudit</AssemblyName>
     <Product>Windows Audit</Product>
-    <Version>1.0.2.0</Version>
+    <Version>1.0.3.0</Version>
   </PropertyGroup>
 
 </Project>

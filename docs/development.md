@@ -197,7 +197,7 @@ Setup installs for the current user under `%LOCALAPPDATA%\Programs\Windows Audit
 without administrator rights, adds a Start menu shortcut, offers an optional desktop
 shortcut, and registers an uninstaller. Existing user-created audit files and
 settings are not explicitly deleted by the uninstaller.
-Add/Remove Programs displays `Windows Audit 1.0.2.0` with publisher
+Add/Remove Programs displays `Windows Audit 1.0.3.0` with publisher
 `Built by Richard Harris`; the installer derives its displayed version from
 the published executable. The MSIX package display name also includes its version.
 
@@ -218,7 +218,7 @@ pwsh -STA -File .\packaging\Build-MSIX.ps1
 
 Use `-MakeAppxPath` if the SDK tool cannot be found automatically. The script also
 detects Microsoft SDK Build Tools extracted under `artifacts\tools\sdk-buildtools`.
-It creates a self-contained, unsigned `artifacts\msix\WindowsAudit_1.0.2.0_x64.msix`
+It creates a self-contained, unsigned `artifacts\msix\WindowsAudit_1.0.3.0_x64.msix`
 for the MSIX app submission in Partner Center. Microsoft signs the accepted Store
 package; this does not sign the separate EXE installer. By default the script
 reads the application version from its project file. For later releases, update
@@ -226,7 +226,7 @@ the app project and package manifest together, keeping the fourth component zero
 An explicit `-Version` overrides the version for a standalone MSIX build only.
 
 The GitHub **Release** action tests and builds both packages, then generates
-`artifacts\SHA256SUMS.txt`. Push a matching tag (currently `v1.0.2.0`) to create
+`artifacts\SHA256SUMS.txt`. Push a matching tag (currently `v1.0.3.0`) to create
 a draft GitHub Release with the installer, unsigned MSIX, and checksums attached.
 A manual run on a branch uploads build artifacts without creating a release.
 The action rejects mismatched app/manifest versions or a mismatched release tag.
