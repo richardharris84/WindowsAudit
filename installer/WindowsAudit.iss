@@ -4,7 +4,7 @@
 #ifndef OutputDir
   #error OutputDir must point to the installer output folder.
 #endif
-#define AppVersion GetFileVersion(PublishDir + "\WindowsAudit.exe")
+#define AppVersion GetVersionNumbersString(PublishDir + "\WindowsAudit.exe")
 
 [Setup]
 AppId={{E45F0B73-903B-46B6-994A-3419AB425E91}

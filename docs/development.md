@@ -116,6 +116,11 @@ review any exported reports for identifying information before sharing.
 The root README and `docs/` Markdown files (including `Copilot-Prompts.md`) are copied into
 the app's output `Assets/` directory during builds. Existing installer, MSIX, and
 publish outputs are not automatically refreshed when source documentation changes.
+Publishing explicitly keeps the README, documentation, and starter whitelist as
+loose files beside the executable, even for single-file builds. Distribute the
+installer or MSIX, not just the executable. Both packaging scripts reject a
+missing or stale Getting Started README; the MSIX build and Release action also
+verify its content inside the completed package.
 
 ## Build and Test
 
@@ -193,13 +198,21 @@ The script publishes a self-contained Windows x64 application and creates
 `artifacts\installer\WindowsAudit-Setup.exe`. Distribute this one installer; users
 do not need to unzip files or install .NET.
 
+Inno Setup compiles in a unique system temporary directory so workspace sync tools
+do not interfere with executable resource updates. The script checks the completed
+installer's version against the published application before copying it to the
+output folder, then removes its temporary directory even if compilation fails.
+Compilation and copy errors stop the build; an existing installer is not treated
+as a successful new build. No antivirus exclusions are required by the script.
+
 Setup installs for the current user under `%LOCALAPPDATA%\Programs\Windows Audit`
 without administrator rights, adds a Start menu shortcut, offers an optional desktop
 shortcut, and registers an uninstaller. Existing user-created audit files and
 settings are not explicitly deleted by the uninstaller.
 Add/Remove Programs displays `Windows Audit 1.0.3.0` with publisher
 `Built by Richard Harris`; the installer derives its displayed version from
-the published executable. The MSIX package display name also includes its version.
+the published executable. The MSIX package display name stays exactly `Windows Audit`
+to match the name reserved in Partner Center; its identity contains the version.
 
 The installer is unsigned. For distribution, sign the executable and installer with a trusted Authenticode code-signing certificate, timestamp the signature, protect the private key, and publish a SHA-256 checksum. Unsigned or untrusted binaries may trigger SmartScreen or email-provider warnings; share a release link rather than attaching executables to email.
 
@@ -220,8 +233,11 @@ Use `-MakeAppxPath` if the SDK tool cannot be found automatically. The script al
 detects Microsoft SDK Build Tools extracted under `artifacts\tools\sdk-buildtools`.
 It creates a self-contained, unsigned `artifacts\msix\WindowsAudit_1.0.3.0_x64.msix`
 for the MSIX app submission in Partner Center. Microsoft signs the accepted Store
-package; this does not sign the separate EXE installer. By default the script
-reads the application version from its project file. For later releases, update
+package; this does not sign the separate EXE installer. The script
+uses a unique system temporary directory for staging and removes it after the build,
+avoiding workspace sync locks. The package display name must stay `Windows Audit`,
+exactly matching the reserved Store name; do not append the package version.
+By default, the script reads the application version from its project file. For later releases, update
 the app project and package manifest together, keeping the fourth component zero.
 An explicit `-Version` overrides the version for a standalone MSIX build only.
 

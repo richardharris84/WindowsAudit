@@ -32,10 +32,33 @@ $project = Join-Path $root 'src\WindowsServiceAudit.App\WindowsServiceAudit.App.
     -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true `
     -p:DebugType=None -p:DebugSymbols=false --output $publishDirectory
 if ($LASTEXITCODE -ne 0) { throw "Publish failed with exit code $LASTEXITCODE." }
+$readmePath = Join-Path $publishDirectory 'Assets\README.md'
+if (-not (Test-Path -LiteralPath $readmePath) -or
+    (Get-FileHash -LiteralPath $readmePath).Hash -ne (Get-FileHash -LiteralPath (Join-Path $root 'README.md')).Hash) {
+    throw 'Published Getting Started README is missing or does not match the source.'
+}
 
-& $IsccPath "/DPublishDir=$publishDirectory" "/DOutputDir=$outputDirectory" (Join-Path $PSScriptRoot 'WindowsAudit.iss')
-if ($LASTEXITCODE -ne 0) { throw "Installer compilation failed with exit code $LASTEXITCODE." }
+$stage = Join-Path ([IO.Path]::GetTempPath()) "WindowsAudit-installer-$([Guid]::NewGuid().ToString('N'))"
+New-Item -ItemType Directory -Path $stage | Out-Null
+try {
+    # Keep Inno's resource updates outside folders watched by workspace sync tools.
+    & $IsccPath "/DPublishDir=$publishDirectory" "/DOutputDir=$stage" (Join-Path $PSScriptRoot 'WindowsAudit.iss')
+    if ($LASTEXITCODE -ne 0) { throw "Installer compilation failed with exit code $LASTEXITCODE." }
 
-$setupPath = Join-Path $outputDirectory 'WindowsAudit-Setup.exe'
-if (-not (Test-Path -LiteralPath $setupPath)) { throw "Installer was not created: $setupPath" }
-Get-Item -LiteralPath $setupPath
+    $stagedSetupPath = Join-Path $stage 'WindowsAudit-Setup.exe'
+    $installer = Get-Item -LiteralPath $stagedSetupPath
+    if ($installer.Length -eq 0) { throw "Installer is empty: $stagedSetupPath" }
+    $expectedVersion = (Get-Item -LiteralPath (Join-Path $publishDirectory 'WindowsAudit.exe')).VersionInfo.FileVersion
+    $installerVersion = $installer.VersionInfo.ProductVersion.Trim()
+    if ($installerVersion -ne $expectedVersion) {
+        throw "Installer version '$installerVersion' does not match published version '$expectedVersion'."
+    }
+
+    New-Item -ItemType Directory -Path $outputDirectory -Force | Out-Null
+    $setupPath = Join-Path $outputDirectory 'WindowsAudit-Setup.exe'
+    Copy-Item -LiteralPath $stagedSetupPath -Destination $setupPath -Force
+    Get-Item -LiteralPath $setupPath
+}
+finally {
+    if (Test-Path -LiteralPath $stage) { Remove-Item -LiteralPath $stage -Recurse -Force }
+}
