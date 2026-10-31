@@ -62,7 +62,7 @@ internal static partial class Program
         aboutHost.Measure(new Size(1120, 730));
         aboutHost.Arrange(new Rect(0, 0, 1120, 730));
         aboutHost.UpdateLayout();
-        Frame("startup-about", "Welcome to Windows Audit", "Start with About: what the app does, how to scan, and how to read results.", drawing =>
+        Frame("startup-about", "Welcome to Windows Audit", "Start with Getting Started: learn how to scan and read your results.", drawing =>
         {
             drawing.DrawRectangle(new SolidColorBrush(Color.FromArgb(95, 28, 48, 56)), null, new Rect(160, 115, 1600, 800));
             drawing.DrawRectangle(Brushes.White, new Pen(Teal, 1), new Rect(400, 139, 1120, 762));
@@ -157,7 +157,19 @@ internal static partial class Program
             Text(drawing, allRecords[0].ExecutablePath, 450, 730, 25, Teal, true);
             Text(drawing, "Startup: Auto    Account: LocalSystem    Memory snapshot: 42.6 MB", 450, 780, 23, Ink);
         });
-        var report = ResultsWriter.GenerateReport(allRecords, new DateTime(2026, 10, 30, 12, 0, 0));
+        var editor = new WhitelistEditorWindow(Path.Combine(Root, "demo-whitelist.csv"),
+            ["system32", "Demo Backup", "Demo Security"]);
+        var editorScroll = (ScrollViewer)editor.Content;
+        var editorContent = (FrameworkElement)editorScroll.Content;
+        editorScroll.Content = null;
+        editor.Content = null;
+        editorContent.Width = double.NaN;
+        host.Child = editorContent;
+        Frame("whitelist", "Recognize familiar software",
+            "Edit your whitelist in the app. Matching is case-insensitive.");
+        host.Child = null;
+        editor.Close();
+        var report = ResultsWriter.GenerateReport(allRecords, DateTime.Now);
         var reportPath = Path.Combine(Root, "Win-Srv-Eval-Report.md");
         var reportWindow = new ReadmeWindow(report, Root, reportPath, showDocxExport: true);
         var reportContent = (FrameworkElement)reportWindow.Content;
@@ -169,7 +181,7 @@ internal static partial class Program
         reportWindow.Close();
         window.Close();
         app.Shutdown();
-        Console.WriteLine("Rendered startup About and expanded scan showcase; verified filtering and numeric sorting.");
+        Console.WriteLine("Rendered Getting Started, whitelist, and scan showcase; verified filtering and numeric sorting.");
     }
 
     private static IEnumerable<DependencyObject> Descendants(DependencyObject parent)
