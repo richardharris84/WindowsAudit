@@ -5,6 +5,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Automation;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Data;
 using Microsoft.Win32;
@@ -23,11 +24,22 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        Accessibility.Configure(this, AccessibleLayout, minimumWidth: 1080);
         ServicesGrid.ItemsSource = _services;
     }
 
     private void Window_Loaded(object sender, RoutedEventArgs e)
     {
+        try
+        {
+            var enabled = AccessibilitySettings.Load();
+            AccessibilityMenuItem.IsChecked = enabled;
+            Accessibility.SetEnabled(enabled);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or System.Text.Json.JsonException)
+        {
+            MessageBox.Show(this, exception.Message, "Accessibility preference unavailable", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
         _servicesView = CollectionViewSource.GetDefaultView(_services);
         _servicesView.Filter = FilterService;
         try
@@ -74,13 +86,13 @@ public partial class MainWindow : Window
             _servicesView?.Refresh();
             TotalCountText.Text = results.Count.ToString("N0");
             ReviewCountText.Text = results.Count(record => record.Status == "REVIEW").ToString("N0");
-            StatusText.Text = "Audit complete.";
+            AnnounceStatus($"Audit complete. {results.Count:N0} services; {results.Count(record => record.Status == "REVIEW"):N0} require review.");
             reportPath = Path.Combine(outputDirectory, "Win-Srv-Eval-Report.md");
             ViewResultsMenuItem.IsEnabled = true;
         }
         catch (Exception exception)
         {
-            StatusText.Text = "Audit failed.";
+            AnnounceStatus("Audit failed.");
             MessageBox.Show(this, exception.Message, "Audit failed", MessageBoxButton.OK, MessageBoxImage.Error);
         }
         finally
@@ -211,7 +223,15 @@ public partial class MainWindow : Window
         }
     }
 
-    private void About_Click(object sender, RoutedEventArgs e) => ShowReadme(isStartup: false);
+    private void GettingStarted_Click(object sender, RoutedEventArgs e) => ShowReadme(isStartup: false);
+
+    private void About_Click(object sender, RoutedEventArgs e)
+    {
+        var version = typeof(MainWindow).Assembly.GetName().Version
+            ?? throw new InvalidOperationException("Application assembly version is unavailable.");
+        MessageBox.Show(this, $"Windows Audit\nVersion {version.ToString(4)}\n\nBuilt by Richard Harris",
+            "About Windows Audit", MessageBoxButton.OK, MessageBoxImage.Information);
+    }
 
     private void OpenServices_Click(object sender, RoutedEventArgs e) =>
         OpenWindowsUtility("services.msc", "Could not open Services.");
@@ -403,6 +423,34 @@ public partial class MainWindow : Window
         AuditProgressBar.Visibility = busy ? Visibility.Visible : Visibility.Collapsed;
         StatusText.Text = message;
         IsEnabled = !busy;
+        if (busy) AnnounceStatus(message);
+    }
+
+    private void IncreaseText_Click(object sender, RoutedEventArgs e) => Accessibility.ChangeScale(0.25);
+    private void DecreaseText_Click(object sender, RoutedEventArgs e) => Accessibility.ChangeScale(-0.25);
+    private void ResetText_Click(object sender, RoutedEventArgs e) => Accessibility.ChangeScale(null);
+
+    private void AnnounceStatus(string message)
+    {
+        StatusText.Text = message;
+        if (!Accessibility.Enabled) return;
+        var peer = UIElementAutomationPeer.FromElement(StatusText) ?? UIElementAutomationPeer.CreatePeerForElement(StatusText);
+        peer?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
+    }
+
+    private void Accessibility_Click(object sender, RoutedEventArgs e)
+    {
+        var enabled = AccessibilityMenuItem.IsChecked;
+        try
+        {
+            AccessibilitySettings.Save(enabled);
+            Accessibility.SetEnabled(enabled);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            AccessibilityMenuItem.IsChecked = Accessibility.Enabled;
+            MessageBox.Show(this, exception.Message, "Could not save accessibility preference", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
     private void UpdateProgress(AuditProgress progress)

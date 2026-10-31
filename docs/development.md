@@ -2,6 +2,9 @@
 
 [Recreate the project with Copilot prompts](../Copilot-Prompts.md) covers the PowerShell prototype, WPF application, packaging, Store assets, and testing, with an explanation of the guide's sources and scope.
 
+[GitHub Actions guide](../GitHubActions.md) describes CI, code scanning, script
+analysis, and the Release workflow.
+
 ## Download Source Code
 
 [Windows Audit on GitHub](https://github.com/richardharris84/WindowsAudit)
@@ -29,8 +32,13 @@ The app targets `net10.0-windows`; WPF provides its main window, menus, audit gr
 ```text
 WindowsAudit/
 |-- .gitignore                             # Excludes generated outputs and local/private data
+|-- .github/
+|   |-- prompts/
+|   |   `-- release-build.prompt.md         # Reusable full build and GitHub Release prompt
+|   `-- workflows/                         # CI, scanning, automation, and Release action
 |-- README.md                              # End-user introduction and safety notes
 |-- Copilot-Prompts.md                      # Ordered reconstruction prompts, sources, and scope
+|-- GitHubActions.md                        # GitHub Actions workflow guide
 |-- WindowsServiceAudit.slnx                # .NET solution
 |-- artifacts/                             # Generated outputs and local build tools
 |   |-- branding/                          # Store logo PNGs (1024, 300, 150, and 71 px)
@@ -125,6 +133,45 @@ dotnet test .\WindowsServiceAudit.slnx
 
 The tests cover whitelist loading and matching, service path parsing and target fallback, CSV schema and escaping, DOCX report generation and validation, and generated-section behavior in `Win-Srv-Eval-Report.md`.
 
+## Accessibility Testing
+
+**View > Enhanced accessibility** is off by default and is remembered in
+`%LOCALAPPDATA%\WindowsServiceAudit\accessibility.json`, separately from the audit
+folder setting. Invalid or inaccessible settings produce an explicit warning.
+Menu access keys remain available regardless of this preference. Added button
+and input access keys/automation labels, contrast styling, strong focus outlines,
+zoom, and scan announcements are enabled only with the preference.
+Disabling it restores standard styling and resets zoom to 100%.
+
+With the preference enabled, the app uses dynamic Windows system colors and strong keyboard-focus outlines.
+Interface zoom is available through the View menu and Ctrl+Plus, Ctrl+Minus, and
+Ctrl+0 in the main window and dialogs. Zoom ranges from 100% to 200% for the
+current session. Scan start, completion counts, and errors raise polite
+UI Automation live-region events; progress updates are deliberately not announced.
+See [Keyboard Navigation](../README.md#keyboard-navigation) for access keys.
+
+Before releasing accessibility changes, manually verify:
+
+- Start with no saved preference: confirm the standard appearance and working
+  menu access keys. Enable/disable the option repeatedly, then restart and verify
+  the choice is remembered and both existing/new dialogs follow the selected mode.
+- With Narrator (Ctrl+Windows+Enter) and NVDA, navigate menus, buttons, filter,
+  sample interval, inventory cells, whitelist editor, and report links. Confirm
+  meaningful names, reading order, and scan completion/error announcements.
+- Use only the keyboard: check Alt access keys, Tab/Shift+Tab order, arrow keys,
+  visible focus, Escape, and access to Save/Cancel from the multiline editor.
+- Enable a Windows contrast theme and switch it while the app is open. Check
+  menus, selected grid cells, dialog text, links, and focus indicators.
+- At Windows display scaling of 200% and app zoom of 200%, resize each window
+  down to its minimum size. Check reflow, scrolling, and that all actions remain
+  reachable without text overlap.
+- Invite visually impaired users to complete a scan, filter results, edit the
+  whitelist, and export a report; collect feedback before claiming usability.
+
+Automated UI regression tests cover access-key uniqueness, labels, focus-style
+and live-region metadata, zoom bounds, enlarged horizontal scrolling, and grid
+sorting. They do not replace screen-reader, OS display-scaling, or user testing.
+
 ## Self-Contained Publish
 
 Publish a self-contained Windows x64 build so users do not need to install .NET:
@@ -196,6 +243,54 @@ signature. Do not ask public users to trust a development certificate.
 MSIX installs into a protected package folder, so automatic report files and the
 editable whitelist use the existing writable-folder fallback. Export dialogs
 still allow users to choose a writable destination.
+
+## Create a Release with Copilot
+
+The reusable [release-build prompt](../.github/prompts/release-build.prompt.md)
+guides an agent through version updates, full EXE installer and MSIX builds,
+tests, and a verified GitHub Release using the existing
+[Release action](../.github/workflows/release.yml).
+
+Open the repository root in VS Code and run the prompt in **Copilot Chat**, not
+the terminal:
+
+```text
+/release-build
+```
+
+You can supply a version and publication preference:
+
+```text
+/release-build version 1.0.3.0, create a draft release
+```
+
+The version above is an example; choose an unused version newer than existing
+releases. Without a version, the prompt chooses the next appropriate unused patch
+version. EXE and MSIX versions remain identical, with four numeric components
+and a final `.0` for Store compatibility. Installed display names include the
+version and retain publisher `Built by Richard Harris`.
+
+The prompt defaults to a **draft** release. Add `publish publicly` only when you
+want public publication. It reviews changes, runs tests and package builds,
+commits the intended changes, pushes an annotated `v<version>` tag, waits for the
+Release action, downloads its packages, and verifies their SHA-256 checksums.
+This executes real Git and GitHub operations; it is not a preview. It requires
+GitHub authentication with permission to push and create releases, plus the
+local build prerequisites described above. If local packaging tools are missing,
+the prompt reports the limitation and verifies the action-built packages instead.
+
+If `/release-build` does not work:
+
+1. Press **Ctrl+Shift+P**.
+2. Select **Chat: Run Prompt**.
+3. Select **release-build**.
+
+Alternatively, open the prompt file and select **Run Prompt**. Try **Developer:
+Reload Window** if discovery has not refreshed. No commit or push is needed for
+VS Code to discover the local prompt.
+
+Both packages remain unsigned. The MSIX is intended for Store submission, not
+ordinary direct installation without appropriate signing.
 
 ## Runtime Assets
 

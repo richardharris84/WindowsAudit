@@ -1,6 +1,7 @@
 using System.IO;
 using System.Security;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -19,7 +20,7 @@ public sealed class WhitelistEditorWindow : Window
     {
         _whitelistPath = Path.GetFullPath(whitelistPath);
         Title = "Edit Whitelist";
-        Icon = BitmapFrame.Create(new Uri("pack://application:,,,/Assets/WindowsAudit.ico"));
+        Icon = BitmapFrame.Create(new Uri("pack://application:,,,/WindowsAudit;component/Assets/WindowsAudit.ico"));
         Width = 620;
         Height = 680;
         MinWidth = 480;
@@ -34,11 +35,19 @@ public sealed class WhitelistEditorWindow : Window
             HorizontalAlignment = HorizontalAlignment.Right,
             Margin = new Thickness(0, 14, 0, 0)
         };
-        var cancel = new Button { Content = "Cancel", MinWidth = 90, Margin = new Thickness(4, 0, 0, 0) };
+        var cancel = new Button
+        {
+            Content = "_Cancel",
+            ToolTip = "Cancel (Alt+C or Escape)",
+            IsCancel = true,
+            MinWidth = 90,
+            Margin = new Thickness(4, 0, 0, 0)
+        };
         cancel.Click += (_, _) => DialogResult = false;
         var save = new Button
         {
-            Content = "Save",
+            Content = "_Save",
+            ToolTip = "Save (Alt+S)",
             MinWidth = 90,
             Margin = new Thickness(8, 0, 0, 0),
             Background = new SolidColorBrush(Color.FromRgb(8, 126, 131)),
@@ -55,14 +64,16 @@ public sealed class WhitelistEditorWindow : Window
         content.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         content.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         content.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-        content.Children.Add(new TextBlock
+        var termsLabel = new Label
         {
-            Text = "Whitelist terms",
+            Content = "Whitelist _terms",
+            Padding = new Thickness(0),
             FontSize = 21,
             FontWeight = FontWeights.SemiBold,
             Foreground = new SolidColorBrush(Color.FromRgb(28, 48, 56)),
             Margin = new Thickness(0, 0, 0, 6)
-        });
+        };
+        content.Children.Add(termsLabel);
 
         var description = new TextBlock
         {
@@ -78,7 +89,7 @@ public sealed class WhitelistEditorWindow : Window
         {
             Text = string.Join(Environment.NewLine, terms),
             AcceptsReturn = true,
-            AcceptsTab = true,
+            AcceptsTab = false,
             TextWrapping = TextWrapping.Wrap,
             VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
             HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
@@ -88,11 +99,16 @@ public sealed class WhitelistEditorWindow : Window
             Background = Brushes.White,
             BorderBrush = new SolidColorBrush(Color.FromRgb(215, 225, 226))
         };
+        termsLabel.Target = _termsTextBox;
+        AutomationProperties.SetName(_termsTextBox, "Whitelist terms");
+        AutomationProperties.SetLabeledBy(_termsTextBox, termsLabel);
+        AutomationProperties.SetHelpText(_termsTextBox, description.Text);
         Grid.SetRow(_termsTextBox, 2);
         content.Children.Add(_termsTextBox);
 
         layout.Children.Add(content);
         Content = layout;
+        Accessibility.Configure(this, layout);
     }
 
     private void Save_Click(object sender, RoutedEventArgs e)

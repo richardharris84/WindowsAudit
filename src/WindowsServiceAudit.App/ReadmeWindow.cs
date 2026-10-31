@@ -37,7 +37,7 @@ public sealed class ReadmeWindow : Window
         _markdownContent = readme;
         _showDocxExport = showDocxExport;
         Title = title;
-        Icon = BitmapFrame.Create(new Uri("pack://application:,,,/Assets/WindowsAudit.ico"));
+        Icon = BitmapFrame.Create(new Uri("pack://application:,,,/WindowsAudit;component/Assets/WindowsAudit.ico"));
         Width = 860;
         Height = 720;
         MinWidth = 600;
@@ -56,7 +56,8 @@ public sealed class ReadmeWindow : Window
         {
             var export = new Button
             {
-                Content = "Export DOCX",
+                Content = "_Export DOCX",
+                ToolTip = "Export DOCX (Alt+E)",
                 Padding = new Thickness(18, 9, 18, 9),
                 Margin = new Thickness(0, 0, 8, 0),
                 MinWidth = 110
@@ -67,10 +68,12 @@ public sealed class ReadmeWindow : Window
 
         var close = new Button
         {
-            Content = "OK",
+            Content = "_OK",
+            ToolTip = "Close (Alt+O, Enter, or Escape)",
             Padding = new Thickness(18, 9, 18, 9),
             MinWidth = 88,
-            IsDefault = true
+            IsDefault = true,
+            IsCancel = true
         };
         close.Click += (_, _) => Close();
         actions.Children.Add(close);
@@ -90,6 +93,7 @@ public sealed class ReadmeWindow : Window
         };
         layout.Children.Add(_content);
         Content = layout;
+        Accessibility.Configure(this, layout, horizontalScrolling: false);
         Loaded += (_, _) => ScrollToDocumentTop();
     }
 
@@ -230,6 +234,7 @@ public sealed class ReadmeWindow : Window
             document.Blocks.Add(code);
         }
         FlushParagraph();
+        Accessibility.ApplyMode(document);
         return document;
     }
 

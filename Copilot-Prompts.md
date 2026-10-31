@@ -367,12 +367,34 @@ Delayed Auto Start, Trigger Configuration, Classification Evidence, Process ID,
 Review Signals, and Signature Status. Keep other property names as headers.
 Call the working-set column "Memory (MB)", not "WorkingSet (MB)".
 
+Provide unique Alt access keys for menu siblings and main-window buttons:
+Alt+F/V/T/H for menus, Alt+S/W/E/G for scan/whitelist/CSV/getting started,
+Alt+C for the sample interval, and Alt+L for the filter. Use WPF underscore
+mnemonics and targeted Labels for input controls. Supply clear automation names
+without decorative glyphs. Give dialog buttons access keys and Escape-to-close
+or cancel behavior; the multiline whitelist editor must let Tab leave the field.
+Use dynamic Windows system colors throughout windows and Markdown content,
+and a strong keyboard-focus outline. Offer session-wide 100-200% interface zoom
+in 25% steps using View menu items and Ctrl+Plus/Minus/0 in all windows.
+Keep enlarged controls reachable using bounded layouts and horizontal scrolling.
+Raise polite UI Automation live-region events for scan start, completion counts,
+and failure, not for every progress update. Gate these enhancements, including
+added button/input shortcuts and automation labels, behind a checkable View >
+Enhanced accessibility option, off initially and remembered across restarts in
+accessibility.json separately from audit-folder settings. Menu shortcuts remain
+available for everyone. Disabling the option restores standard styling and
+100% zoom. Surface preference read/write errors explicitly.
+Validate with automated UI tests and
+a manual Narrator/NVDA, contrast-theme, and 200% Windows display-scaling checklist.
+
 Use this final menu structure:
 File: Edit whitelist..., separator, Export CSV..., separator, Exit.
 View: Results (initially disabled).
 Tools: Scan Windows Services..., Stop / Disable Services, separator,
        Add or remove programs, Startup Apps, separator, Cleanup Large Files.
-Help: About.
+Help: Getting Started (opens README), separator, About (shows four-component
+assembly version and Built by Richard Harris). The toolbar Getting Started
+button opens README; do not hardcode the About version.
 
 Do not expose Configure audit folder/Configure output folder in the final menu.
 Preserve the saved-setting compatibility underneath it. Scan Windows Services
