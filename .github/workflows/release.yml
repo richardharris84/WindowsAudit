@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   release:
-    name: Build installer & publish release
+    name: Build installer and MSIX & create draft release
     runs-on: windows-latest
     steps:
       - name: Checkout repository
@@ -24,27 +24,74 @@ jobs:
       - name: Run tests
         run: dotnet test WindowsServiceAudit.slnx --configuration Release
 
+      - name: Validate release versions
+        shell: pwsh
+        run: |
+          $project = [xml](Get-Content src\WindowsServiceAudit.App\WindowsServiceAudit.App.csproj -Raw)
+          $version = [string]$project.Project.PropertyGroup.Version
+          $manifest = [xml](Get-Content packaging\AppxManifest.xml -Raw)
+          if ($version -notmatch '^\d+\.\d+\.\d+\.0$') {
+            throw "App version must be Store-compatible: $version"
+          }
+          if ($manifest.Package.Identity.Version -ne $version) {
+            throw "App and MSIX manifest versions must match."
+          }
+          if ($env:GITHUB_REF_TYPE -eq 'tag' -and $env:GITHUB_REF_NAME -ne "v$version") {
+            throw "Release tag must match app version v$version."
+          }
+
       # Publishes the self-contained exe and compiles the Inno Setup installer.
       # ISCC.exe is preinstalled on GitHub's Windows runners.
       - name: Build installer
         run: pwsh -File installer\Build-Installer.ps1
 
+      - name: Build unsigned Store MSIX
+        run: pwsh -STA -File packaging\Build-MSIX.ps1
+
+      - name: Verify built package versions
+        shell: pwsh
+        run: |
+          $project = [xml](Get-Content src\WindowsServiceAudit.App\WindowsServiceAudit.App.csproj -Raw)
+          $version = [string]$project.Project.PropertyGroup.Version
+          $exe = Get-Item artifacts\publish\win-x64\WindowsAudit.exe
+          if ($exe.VersionInfo.FileVersion -ne $version) {
+            throw "Built EXE version does not match $version."
+          }
+          $package = [IO.Compression.ZipFile]::OpenRead(
+            (Join-Path $PWD "artifacts\msix\WindowsAudit_${version}_x64.msix"))
+          try {
+            $reader = [IO.StreamReader]::new($package.GetEntry('AppxManifest.xml').Open())
+            try { $manifest = [xml]$reader.ReadToEnd() } finally { $reader.Dispose() }
+            if ($manifest.Package.Identity.Version -ne $version -or
+                $manifest.Package.Properties.DisplayName -ne "Windows Audit $version") {
+              throw "Built MSIX version or display name does not match $version."
+            }
+          }
+          finally { $package.Dispose() }
+
       - name: Generate checksums
         shell: pwsh
         run: |
-          Set-Location artifacts\installer
-          Get-FileHash WindowsAudit-Setup.exe -Algorithm SHA256 |
-            ForEach-Object { "$($_.Hash.ToLower())  WindowsAudit-Setup.exe" } |
-            Set-Content SHA256SUMS.txt -Encoding ascii
-          Get-Content SHA256SUMS.txt
+          $project = [xml](Get-Content src\WindowsServiceAudit.App\WindowsServiceAudit.App.csproj -Raw)
+          $version = [string]$project.Project.PropertyGroup.Version
+          $files = @(
+            'artifacts\installer\WindowsAudit-Setup.exe',
+            "artifacts\msix\WindowsAudit_${version}_x64.msix"
+          )
+          Get-FileHash -LiteralPath $files -Algorithm SHA256 |
+            ForEach-Object { "$($_.Hash.ToLower())  $(Split-Path $_.Path -Leaf)" } |
+            Set-Content artifacts\SHA256SUMS.txt -Encoding ascii
+          Get-Content artifacts\SHA256SUMS.txt
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v7
         with:
-          name: WindowsAudit-Setup
+          name: WindowsAudit-Release
+          if-no-files-found: error
           path: |
             artifacts/installer/WindowsAudit-Setup.exe
-            artifacts/installer/SHA256SUMS.txt
+            artifacts/msix/*.msix
+            artifacts/SHA256SUMS.txt
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
@@ -52,6 +99,12 @@ jobs:
         with:
           draft: true
           generate_release_notes: true
+          fail_on_unmatched_files: true
+          body: |
+            The EXE installer and MSIX contain the same application version.
+            Both packages are unsigned. The MSIX is intended for Microsoft Store
+            submission, not direct installation without appropriate signing.
           files: |
             artifacts/installer/WindowsAudit-Setup.exe
-            artifacts/installer/SHA256SUMS.txt
+            artifacts/msix/*.msix
+            artifacts/SHA256SUMS.txt

@@ -46,6 +46,8 @@ For each current `REVIEW` service, the report includes available local details s
 
 The table and CSV include service state, startup configuration, paths, review signals, process ID, signer metadata, and other available details. Some values may be blank when Windows restricts access or the information is not available. Embedded signer certificate information does not mean signature trust was evaluated.
 
+The table omits **Unquoted Path With Spaces** and **Dependents**; their fields remain in CSV exports, and unquoted-path findings remain available in review signals and reports.
+
 The table's **Memory (MB)** column sorts numerically and is exported as `WorkingSetMB` in CSV. This working-set value is a process-level memory reading taken once after the selected interval. Services hosted together by `svchost.exe` share a process reading. The report does not include CPU usage.
 
 ### Edit the Whitelist

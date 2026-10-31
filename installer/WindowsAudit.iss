@@ -10,7 +10,9 @@
 AppId={{E45F0B73-903B-46B6-994A-3419AB425E91}
 AppName=Windows Audit
 AppVersion={#AppVersion}
-AppPublisher=Richard Harris
+AppPublisher=Built by Richard Harris
+AppVerName=Windows Audit {#AppVersion}
+UninstallDisplayName=Windows Audit {#AppVersion}
 AppPublisherURL=https://github.com/richardharris84
 DefaultDirName={localappdata}\Programs\Windows Audit
 DisableProgramGroupPage=yes

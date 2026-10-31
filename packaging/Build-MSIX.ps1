@@ -2,11 +2,19 @@
 param(
     [string]$MakeAppxPath,
     [ValidatePattern('^\d+\.\d+\.\d+\.0$')]
-    [string]$Version = '1.0.0.0'
+    [string]$Version
 )
 
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot -Parent
+$project = Join-Path $root 'src\WindowsServiceAudit.App\WindowsServiceAudit.App.csproj'
+if (-not $Version) {
+    $projectXml = [xml][IO.File]::ReadAllText($project)
+    $Version = [string]$projectXml.Project.PropertyGroup.Version
+}
+if ($Version -notmatch '^\d+\.\d+\.\d+\.0$') {
+    throw "MSIX Store version must have four numeric components and end in .0: $Version"
+}
 if ([Threading.Thread]::CurrentThread.ApartmentState -ne 'STA') {
     throw 'Run this script in STA mode: pwsh -STA -File .\packaging\Build-MSIX.ps1'
 }
@@ -35,7 +43,6 @@ $outputDirectory = Join-Path $root 'artifacts\msix'
 $stage = Join-Path $outputDirectory "staging-$([Guid]::NewGuid().ToString('N'))"
 New-Item -ItemType Directory -Path $stage -Force | Out-Null
 try {
-    $project = Join-Path $root 'src\WindowsServiceAudit.App\WindowsServiceAudit.App.csproj'
     & dotnet publish $project --configuration Release --runtime win-x64 --self-contained true `
         -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true `
         -p:DebugType=None -p:DebugSymbols=false "-p:Version=$Version" --output $stage
@@ -69,6 +76,7 @@ try {
 
     $manifest = [xml][IO.File]::ReadAllText((Join-Path $PSScriptRoot 'AppxManifest.xml'))
     $manifest.Package.Identity.Version = $Version
+    $manifest.Package.Properties.DisplayName = "Windows Audit $Version"
     $manifest.Save((Join-Path $stage 'AppxManifest.xml'))
     $packagePath = Join-Path $outputDirectory "WindowsAudit_$($Version)_x64.msix"
     & $MakeAppxPath pack /d $stage /p $packagePath /o

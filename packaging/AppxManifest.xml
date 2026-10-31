@@ -6,10 +6,10 @@
   IgnorableNamespaces="uap rescap">
   <Identity Name="BuiltbyRichardHarris.WindowsAudit"
             Publisher="CN=2CDAA861-DB03-4AFA-B278-C278B732D5D4"
-            Version="1.0.0.0"
+            Version="1.0.2.0"
             ProcessorArchitecture="x64" />
   <Properties>
-    <DisplayName>Windows Audit</DisplayName>
+    <DisplayName>Windows Audit 1.0.2.0</DisplayName>
     <PublisherDisplayName>Built by Richard Harris</PublisherDisplayName>
     <Description>Read-only Windows service inventory and evaluation reports.</Description>
     <Logo>StoreAssets\StoreLogo.png</Logo>

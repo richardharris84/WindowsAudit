@@ -101,23 +101,28 @@ File: [codeql.yml](.github/workflows/codeql.yml).
 File: [release.yml](.github/workflows/release.yml).
 
 - Runs when a tag matching `v*` is pushed, or by manual dispatch.
-- Runs tests before invoking [Build-Installer.ps1](installer/Build-Installer.ps1).
+- Runs tests before invoking [Build-Installer.ps1](installer/Build-Installer.ps1)
+  and [Build-MSIX.ps1](packaging/Build-MSIX.ps1).
 - Relies on Inno Setup being available on the Windows runner.
-- Builds a self-contained Windows x64 installer and generates its SHA-256
-  checksum.
-- Uploads `WindowsAudit-Setup.exe` and `SHA256SUMS.txt` as a workflow artifact
-  named `WindowsAudit-Setup`.
+- Builds a self-contained Windows x64 installer and unsigned Store MSIX, and
+  generates SHA-256 checksums for both.
+- Requires matching Store-compatible application and manifest versions and,
+  on tag runs, a matching `v<version>` tag.
+- Uploads `WindowsAudit-Setup.exe`, the versioned MSIX, and `SHA256SUMS.txt` as a
+  workflow artifact named `WindowsAudit-Release`.
 - On a `v*` tag reference, also creates a **draft** GitHub Release with generated
-  release notes and both files attached.
+  release notes and all three files attached.
 - A manual run on a branch builds and uploads the artifact but does **not**
   create a GitHub Release.
 - Uses `actions/upload-artifact@v7` and `softprops/action-gh-release@v3`.
 - Grants `contents: write`.
 
-**Limitations:** The workflow does not build MSIX, sign the installer, or derive
-the application version from the tag. A `v*` tag triggers the build but does not
-itself set the executable's version. Checksums detect file changes but do not
-provide a trusted publisher signature.
+**Limitations:** The workflow does not sign either package or derive the
+application version from the tag. The tag must match the version already set in
+the project. The unsigned MSIX is intended for Store submission, not direct
+installation without appropriate signing. Checksums detect file changes but do
+not provide a trusted publisher signature. The earlier archived response above
+describes the original installer-only workflow, not this updated release action.
 
 **MSIX clarification:** Building an unsigned MSIX and signing it for direct
 installation are separate operations. The archived response's certificate

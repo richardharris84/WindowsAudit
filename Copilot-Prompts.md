@@ -198,7 +198,7 @@ Windows Audit application in APP_ROOT. Do not invoke PowerShell at runtime.
 Create WindowsServiceAudit.slnx with:
 - src\WindowsServiceAudit.Core: net10.0-windows class library.
 - src\WindowsServiceAudit.App: net10.0-windows WPF WinExe referencing Core,
-  AssemblyName WindowsAudit, Product Windows Audit, Version 1.0.0.
+  AssemblyName WindowsAudit, Product Windows Audit, Version 1.0.2.0.
 - tests\WindowsServiceAudit.Tests: net10.0-windows MSTest project referencing Core.
 
 Enable nullable reference types and implicit usings. The reference dependency
@@ -357,10 +357,12 @@ Provide main actions Scan Windows Services, Whitelist, Export CSV, and About;
 service/review counts; sample-seconds choices 1,3,5,10,30; a text filter;
 progress/status feedback; and a read-only sortable service DataGrid.
 Bind grid columns to the typed model and show service and path metadata.
-Auto-generate the 24 model columns; prevent row addition/deletion, permit
+Auto-generate model columns but cancel UnquotedPathWithSpaces and Dependents
+in the grid only; preserve both fields in the model and CSV schema.
+Prevent row addition/deletion, permit
 column sorting/reordering, use single selection and horizontal grid lines.
 Use friendly headers for Memory (MB), Service Account, Executable Path,
-Executable Target, Path Candidates, Path Status, Unquoted Path With Spaces,
+Executable Target, Path Candidates, Path Status,
 Delayed Auto Start, Trigger Configuration, Classification Evidence, Process ID,
 Review Signals, and Signature Status. Keep other property names as headers.
 Call the working-set column "Memory (MB)", not "WorkingSet (MB)".
@@ -606,7 +608,7 @@ Publisher: CN=2CDAA861-DB03-4AFA-B278-C278B732D5D4
 PublisherDisplayName: Built by Richard Harris
 DisplayName: Windows Audit
 Product ID (Partner Center reference): 9NV87HQN321L
-Initial package version: 1.0.0.0
+Current package and executable version: 1.0.2.0
 Minimum Windows version: 10.0.19041.0
 Executable: WindowsAudit.exe
 EntryPoint: Windows.FullTrustApplication
@@ -626,7 +628,7 @@ release flags as the installer, rasterize Broom.xaml into package logos at
 with validation, and remove only the staging files created by this build.
 Require version form x.x.x.0; increment it for later Store submissions.
 
-Create artifacts\msix\WindowsAudit_1.0.0.0_x64.msix unsigned for Partner Center.
+Create artifacts\msix\WindowsAudit_1.0.2.0_x64.msix unsigned for Partner Center.
 The Store signs its accepted distribution package, not the separate EXE Setup.
 Do not claim MakeAppx validation is installed-functionality testing or Store
 certification. Do not upload a locally test-signed copy as the Store artifact.
@@ -643,7 +645,7 @@ With explicit approval, prepare a separate test copy under artifacts\msix-test.
 Leave the original unsigned MSIX unchanged and record its SHA-256 before/after.
 Create a short-lived (reference: 90-day) nonexportable RSA-2048/SHA-256 code
 signing certificate whose subject exactly matches the package publisher.
-Sign only WindowsAudit_1.0.0.0_x64_TEST.msix and export only the public
+Sign only WindowsAudit_1.0.2.0_x64_TEST.msix and export only the public
 WindowsAudit-TEST.cer. Do not export or commit a private key/PFX.
 
 Verify signing cryptography and that original application payload entries
@@ -873,7 +875,7 @@ Keep Copilot-Prompts.md and the developer guide current with the final result.
 | Runtime assets | App `Assets/Broom.xaml`, `WindowsAudit.ico`, `whitelist.csv`; README, this guide, and `docs/*.md` copied under output `Assets` |
 | Regression tests | `tests/WindowsServiceAudit.Tests/AuditCoreTests.cs`, `MSTestSettings.cs`, project file |
 | EXE setup | `installer/Build-Installer.ps1`, `WindowsAudit.iss`; generated `artifacts/installer/WindowsAudit-Setup.exe` |
-| MSIX | `packaging/Build-MSIX.ps1`, `AppxManifest.xml`; generated `artifacts/msix/WindowsAudit_1.0.0.0_x64.msix` |
+| MSIX | `packaging/Build-MSIX.ps1`, `AppxManifest.xml`; generated `artifacts/msix/WindowsAudit_1.0.2.0_x64.msix` |
 | Local signed test | Generated `artifacts/msix-test/*_TEST.msix`, public `.cer`, and `TESTING.txt`; not public-distribution credentials |
 | Store imagery and video | Generated `artifacts/branding/*.png`; the final two files under `artifacts/trailer` |
 
@@ -882,7 +884,7 @@ Important boundaries when recreating the final application:
 - **Prototype versus WPF:** the prototype uses PowerShell and Authenticode checks; WPF uses native .NET acquisition and embedded signer-certificate extraction without evaluating trust.
 - **Reports:** the beta updates only a marked block in an existing report. WPF also creates/regenerates recognized reports from the current inventory, protecting unrelated custom files.
 - **Names:** `RESULTS.md`, `service-evaluation-results.csv`, `Run audit`, `WorkingSet (MB)`, and the visible output-folder menu are historical names, not the final UI/output targets.
-- **Dependency metadata:** the WPF `Dependents` column is retained but its registry reader leaves it empty. Do not advertise complete reverse-dependency analysis.
+- **Dependency metadata:** `Dependents` remains in the compatibility/CSV schema but is hidden from the WPF grid; its registry reader leaves it empty. Do not advertise complete reverse-dependency analysis.
 - **Explorer:** the final command drives a fresh search through UI Automation; it does not depend on saved `.search-ms` files.
 - **Trailers:** 36-second and 43-second videos and older thumbnails were intermediate outputs. The final target is the verified 60-second pair.
 - **Testing:** source/unit tests, MakeAppx validation, installed-MSIX workflow checks, and Store certification are different gates.

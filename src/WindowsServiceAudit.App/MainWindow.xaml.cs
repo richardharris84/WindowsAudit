@@ -351,6 +351,12 @@ public partial class MainWindow : Window
 
     private void ServicesGrid_AutoGeneratingColumn(object? sender, DataGridAutoGeneratingColumnEventArgs e)
     {
+        if (e.PropertyName is nameof(ServiceAuditRecord.UnquotedPathWithSpaces) or nameof(ServiceAuditRecord.Dependents))
+        {
+            e.Cancel = true;
+            return;
+        }
+
         e.Column.Header = e.PropertyName switch
         {
             nameof(ServiceAuditRecord.WorkingSetMB) => "Memory (MB)",
@@ -359,7 +365,6 @@ public partial class MainWindow : Window
             nameof(ServiceAuditRecord.ExecutableTarget) => "Executable Target",
             nameof(ServiceAuditRecord.PathCandidates) => "Path Candidates",
             nameof(ServiceAuditRecord.PathStatus) => "Path Status",
-            nameof(ServiceAuditRecord.UnquotedPathWithSpaces) => "Unquoted Path With Spaces",
             nameof(ServiceAuditRecord.DelayedAutoStart) => "Delayed Auto Start",
             nameof(ServiceAuditRecord.TriggerConfigurationPresent) => "Trigger Configuration",
             nameof(ServiceAuditRecord.ClassificationEvidence) => "Classification Evidence",
