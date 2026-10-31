@@ -7,8 +7,17 @@
         <SolidColorBrush x:Key="CanvasBrush" Color="#F2F5F5" />
         <SolidColorBrush x:Key="InkBrush" Color="#1C3038" />
         <SolidColorBrush x:Key="MutedBrush" Color="#60747B" />
-        <SolidColorBrush x:Key="AccentBrush" Color="#087E83" />
         <SolidColorBrush x:Key="LineBrush" Color="#D9E2E3" />
+        <Style x:Key="AccessibleFocus" TargetType="Control">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Border BorderBrush="{DynamicResource {x:Static SystemColors.WindowTextBrushKey}}"
+                                BorderThickness="3" Margin="1" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         <Style TargetType="Button">
             <Setter Property="Padding" Value="14,8" />
             <Setter Property="Margin" Value="4,0" />

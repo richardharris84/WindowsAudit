@@ -24,7 +24,57 @@ extraction is needed. A desktop shortcut is optional.
 
 The app reads the service inventory, waits for the selected sample interval in seconds, then captures process working-set readings. By default, `REVIEW` services appear first, with services sorted alphabetically by display name within each status group. CSV exports use this same order. Click a column heading to sort, or enter text in the filter to narrow the visible rows.
 
+### Keyboard Navigation
+
+Press **Alt** to reveal access-key underlines. Use **Alt+F**, **Alt+V**,
+**Alt+T**, or **Alt+H** to open File, View, Tools, or Help, then press the
+underlined letter of a menu item. Arrow keys navigate menus; **Escape** closes them.
+Menu access keys are available to everyone.
+
+### Enhanced Accessibility (Optional)
+
+Enable **View > Enhanced accessibility** (Alt+V, then A) for the additional
+features below. It is **off by default** and your choice is remembered across
+restarts. Disabling it restores the standard colors, removes the added button
+and input shortcuts/labels, stops scan announcements, and resets zoom to 100%.
+Standard Tab navigation and menu shortcuts remain available.
+
+| Main-window action | Shortcut |
+|---|---|
+| Scan Windows Services | Alt+S |
+| Edit whitelist | Alt+W |
+| Export CSV | Alt+E |
+| Getting Started | Alt+G |
+| Sample interval | Alt+C |
+| Filter services | Alt+L |
+
+Use **Tab** and **Shift+Tab** to move between controls and **Space** to activate
+a focused button. In the whitelist editor, **Alt+T** focuses the terms,
+**Alt+S** saves, and **Alt+C** or **Escape** cancels. Tab moves out of the terms
+editor; Enter inserts a new line. In help and results dialogs, **Alt+O**,
+**Enter**, or **Escape** closes the dialog, and **Alt+E** exports DOCX when that
+button is available.
+
+Use **View > Increase text size**, **Decrease text size**, or **Normal text size**
+to adjust the interface from 100% to 200% in 25% steps. **Ctrl+Plus**,
+**Ctrl+Minus**, and **Ctrl+0** also work in the main window and dialogs (use the
+plus/equal key with or without Shift, or the numeric keypad). The setting applies to
+open and newly opened windows for the current session. Windows display scaling
+also applies. A horizontal scrollbar keeps enlarged main-window controls reachable.
+Welcome, help, and results dialogs wrap text to the available width and scroll
+vertically, without a horizontal scrollbar.
+
+When enhanced accessibility is enabled, the interface uses Windows system colors, including contrast themes, and a
+strong keyboard-focus outline. Enable contrast themes under **Windows Settings >
+Accessibility > Contrast themes**. Scan start, completion counts, and failure
+status are exposed as polite screen-reader announcements; individual progress
+updates are not announced to avoid excessive speech.
+
 ### Reports and Exports
+
+**Help > Getting Started** and the **Getting Started** toolbar button open this
+guide. **Help > About** shows the running application's version
+and publisher. The version is read from the application assembly, not hardcoded.
 
 The results dialog includes **Export DOCX** to save the displayed `Win-Srv-Eval-Report.md` report as a Word document, including support for opening it in OpenOffice Writer. If you close the results dialog, choose **View > Results** to reopen the report from the active audit folder. **View > Results** stays disabled until a scan completes successfully in the current session, and is disabled again while a new scan runs or if it fails.
 
