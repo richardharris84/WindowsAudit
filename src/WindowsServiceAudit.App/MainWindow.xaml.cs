@@ -227,10 +227,7 @@ public partial class MainWindow : Window
 
     private void About_Click(object sender, RoutedEventArgs e)
     {
-        var version = typeof(MainWindow).Assembly.GetName().Version
-            ?? throw new InvalidOperationException("Application assembly version is unavailable.");
-        MessageBox.Show(this, $"Windows Audit\nVersion {version.ToString(4)}\n\nBuilt by Richard Harris",
-            "About Windows Audit", MessageBoxButton.OK, MessageBoxImage.Information);
+        new AboutWindow { Owner = this }.ShowDialog();
     }
 
     private void OpenServices_Click(object sender, RoutedEventArgs e) =>
