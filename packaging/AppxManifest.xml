@@ -6,7 +6,7 @@
   IgnorableNamespaces="uap rescap">
   <Identity Name="BuiltbyRichardHarris.WindowsAudit"
             Publisher="CN=2CDAA861-DB03-4AFA-B278-C278B732D5D4"
-            Version="1.0.3.0"
+            Version="1.0.4.0"
             ProcessorArchitecture="x64" />
   <Properties>
     <DisplayName>Windows Audit</DisplayName>
