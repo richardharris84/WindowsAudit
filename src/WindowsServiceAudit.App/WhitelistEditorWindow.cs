@@ -108,7 +108,7 @@ public sealed class WhitelistEditorWindow : Window
 
         layout.Children.Add(content);
         Content = layout;
-        Accessibility.Configure(this, layout);
+        Accessibility.Configure(this, layout, horizontalScrolling: false);
     }
 
     private void Save_Click(object sender, RoutedEventArgs e)

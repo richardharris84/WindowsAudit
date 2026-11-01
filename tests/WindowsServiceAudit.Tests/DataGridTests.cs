@@ -161,10 +161,11 @@ public sealed class DataGridTests
         var editor = new WhitelistEditorWindow(Path.Combine(Path.GetTempPath(), "whitelist.csv"), ["test"]);
         var readme = new ReadmeWindow("# Test", AppContext.BaseDirectory,
             Path.Combine(AppContext.BaseDirectory, "README.md"), showDocxExport: true);
+        var about = new AboutWindow();
         try
         {
             var editorControls = Descendants(editor).ToArray();
-            var editorLayout = (FrameworkElement)((ScrollViewer)editor.Content).Content;
+            var editorLayout = (DockPanel)editor.Content;
             Assert.AreEqual(1.75, ((ScaleTransform)editorLayout.LayoutTransform).ScaleX);
             var terms = editorControls.OfType<TextBox>().Single();
             Assert.IsFalse(terms.AcceptsTab);
@@ -175,6 +176,25 @@ public sealed class DataGridTests
             CollectionAssert.AreEquivalent(new[] { 'c', 's' },
                 editorButtons.Select(button => AccessKey((string)button.Content)).ToArray());
             Assert.IsTrue(editorButtons.Single(button => AccessKey((string)button.Content) == 'c').IsCancel);
+            AssertDialogFits(editor, editorButtons);
+            AssertDialogFits(about, Descendants(about).OfType<Button>().ToArray());
+            Assert.AreEqual("Windows Audit", about.Title);
+            StringAssert.Contains(about.AboutText, typeof(MainWindow).Assembly.GetName().Version!.ToString(4));
+            StringAssert.Contains(about.AboutText, "Built by Richard Harris");
+            StringAssert.Contains(about.AboutText, AboutWindow.RepositoryUrl);
+            var aboutText = Descendants(about).OfType<TextBlock>().Single();
+            var renderedText = string.Concat(aboutText.Inlines.Select(inline =>
+                inline is System.Windows.Documents.Hyperlink hyperlink
+                    ? string.Concat(hyperlink.Inlines.OfType<System.Windows.Documents.Run>().Select(run => run.Text))
+                    : ((System.Windows.Documents.Run)inline).Text));
+            Assert.AreEqual(about.AboutText, renderedText);
+            Assert.AreEqual(AboutWindow.RepositoryUrl,
+                aboutText.Inlines.OfType<System.Windows.Documents.Hyperlink>().Single().NavigateUri.AbsoluteUri);
+            var aboutButtons = Descendants(about).OfType<Button>().ToArray();
+            CollectionAssert.AreEquivalent(new[] { 'c', 'o' },
+                aboutButtons.Select(button => AccessKey((string)button.Content)).ToArray());
+            Assert.IsTrue(aboutButtons.Single(button => AccessKey((string)button.Content) == 'o').IsCancel);
+            Assert.IsTrue(aboutButtons.Single(button => AccessKey((string)button.Content) == 'o').IsDefault);
 
             var readmeButtons = Descendants(readme).OfType<Button>().ToArray();
             CollectionAssert.AreEquivalent(new[] { 'e', 'o' },
@@ -197,7 +217,30 @@ public sealed class DataGridTests
         {
             editor.Close();
             readme.Close();
+            about.Close();
         }
+    }
+
+    private static void AssertDialogFits(Window dialog, Button[] buttons)
+    {
+        var layout = (DockPanel)dialog.Content;
+        foreach (var scale in new[] { 1.0, 1.75, 2.0 })
+        {
+            layout.LayoutTransform = new ScaleTransform(scale, scale);
+            layout.Measure(new Size(580, 620));
+            layout.Arrange(new Rect(0, 0, 580, 620));
+            layout.UpdateLayout();
+            foreach (var button in buttons)
+            {
+                var bounds = button.TransformToAncestor(layout).TransformBounds(
+                    new Rect(0, 0, button.ActualWidth, button.ActualHeight));
+                Assert.IsTrue(bounds.Left >= 0 && bounds.Right <= layout.ActualWidth + 0.01,
+                    $"Button is horizontally clipped at {scale * 100}%: {button.Content}");
+                Assert.IsTrue(bounds.Top >= 0 && bounds.Bottom <= layout.ActualHeight + 0.01,
+                    $"Button is vertically clipped at {scale * 100}%: {button.Content}");
+            }
+        }
+        layout.LayoutTransform = new ScaleTransform(1.75, 1.75);
     }
 
     private static void AssertMenuAccessKeys(ItemCollection items)

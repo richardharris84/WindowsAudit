@@ -76,6 +76,7 @@ WindowsAudit/
 |   |   |-- MainWindow.xaml.cs               # Audit and tool commands
 |   |   |-- ReadmeWindow.cs                  # Markdown help and results dialog
 |   |   |-- WhitelistEditorWindow.cs         # In-app whitelist editor
+|   |   |-- AboutWindow.cs                   # Version, repository link, and Copy action
 |   |   |-- AuditFolderSettings.cs           # Persisted output-folder preference
 |   |   |-- Assets/
 |   |   |   |-- Broom.xaml                   # Transparent broom and sparkles artwork
@@ -155,6 +156,12 @@ current session. Scan start, completion counts, and errors raise polite
 UI Automation live-region events; progress updates are deliberately not announced.
 See [Keyboard Navigation](../README.md#keyboard-navigation) for access keys.
 
+The whitelist editor wraps within the dialog instead of using an outer horizontal
+scroll container, keeping Save and Cancel visible when resized or zoomed.
+Help > About opens a dialog titled `Windows Audit`, with the assembly version,
+publisher, clickable open-source repository URL, and a Copy button for all
+displayed information. Clipboard and browser launch errors are shown explicitly.
+
 Before releasing accessibility changes, manually verify:
 
 - Start with no saved preference: confirm the standard appearance and working
@@ -165,6 +172,8 @@ Before releasing accessibility changes, manually verify:
   meaningful names, reading order, and scan completion/error announcements.
 - Use only the keyboard: check Alt access keys, Tab/Shift+Tab order, arrow keys,
   visible focus, Escape, and access to Save/Cancel from the multiline editor.
+- Open About, verify its repository link, and use Copy to paste the application
+  name, version, publisher, and repository URL into a text editor.
 - Enable a Windows contrast theme and switch it while the app is open. Check
   menus, selected grid cells, dialog text, links, and focus indicators.
 - At Windows display scaling of 200% and app zoom of 200%, resize each window
